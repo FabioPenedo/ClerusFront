@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 33% 99%;
+  --foreground: 223 22% 12%;
+  --muted: 216 33% 95%;
+  --muted-foreground: 215 16% 45%;
+  --border: 216 33% 92%;
+  --input: 216 33% 92%;
+  --ring: 213 63% 46%;
+  --radius: 12px;
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-feature-settings: "ss01" on, "ss02" on;
+}
+
+.glass {
+  @apply bg-white/70 backdrop-blur-lg border border-white/60 shadow-soft;
+}
+
+.section-grid {
+  @apply grid gap-6 md:grid-cols-[1.1fr_0.9fr] items-center;
+}
+
+.badge {
+  @apply inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground;
+}
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, #1c7ed6, #4dabf7 35%, #1c7ed6);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
