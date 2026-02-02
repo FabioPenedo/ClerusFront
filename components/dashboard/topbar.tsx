@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { User, Bell, Plus, LogOut } from "lucide-react";
 import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
-import { useAuth } from "@/contexts/auth-context";
+import { logout } from "@/lib/services/auth.service";
 
 interface TopbarProps {
   churchName?: string;
@@ -12,7 +12,6 @@ interface TopbarProps {
 }
 
 export function Topbar({ churchName, userName }: TopbarProps) {
-  const { logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
 
@@ -22,7 +21,7 @@ export function Topbar({ churchName, userName }: TopbarProps) {
       await logout();
       
       // Redireciona para login após logout
-      window.location.href = '/login';
+      window.location.href = '/';
     } catch (error) {
       console.error('Erro no logout:', error);
     } finally {

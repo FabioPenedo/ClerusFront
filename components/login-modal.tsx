@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { X } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
-import { IdentifyResponse } from '@/lib/services/auth.service';
+
+import { identify, login, IdentifyResponse } from '@/lib/services/auth.service';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,262 +27,249 @@ interface LoginModalProps {
   onSwitchToSignup: () => void;
 }
 
-export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProps) {
+export function LoginModal({
+  isOpen,
+  onClose,
+  onSwitchToSignup,
+}: LoginModalProps) {
   const router = useRouter();
-  const { identify, login, error, isLoading, clearError } = useAuth();
-  
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [state, setState] = useState<LoginState>({
     step: 'identify',
     email: '',
     password: '',
     tenants: [],
-    selectedTenantId: null
+    selectedTenantId: null,
   });
-
-  const [localError, setLocalError] = useState<string | null>(null);
-  const currentError = error || localError;
 
   if (!isOpen) return null;
 
+  /* =========================
+     IDENTIFY
+  ========================= */
   const handleIdentify = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (isLoading) return;
+
     if (!state.email.trim()) {
-      setLocalError('Digite seu email');
+      setError('Digite seu email');
       return;
     }
 
-    setLocalError(null);
-    clearError();
+    setIsLoading(true);
+    setError(null);
 
     try {
       const result = await identify(state.email);
-      
+
+      if (result.mode === 'single') {
+        if (result.tenants.length !== 1) {
+          throw new Error('Tenant único inválido');
+        }
+
+        setState(prev => ({
+          ...prev,
+          tenants: result.tenants,
+          selectedTenantId: result.tenants[0].tenantId,
+          step: 'login',
+        }));
+        return;
+      }
+
       setState(prev => ({
         ...prev,
         tenants: result.tenants,
-        step: result.mode === 'single' ? 'login' : 'tenant-selection',
-        selectedTenantId: result.mode === 'single' ? result.tenants[0].tenantId : null
+        step: 'tenant-selection',
       }));
-    } catch (err) {
-      console.error('Erro na identificação:', err);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao identificar usuário');
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  /* =========================
+     TENANT SELECTION
+  ========================= */
   const handleTenantSelection = (tenantId: number) => {
+    if (isLoading) return;
+
     setState(prev => ({
       ...prev,
       selectedTenantId: tenantId,
-      step: 'login'
+      step: 'login',
     }));
   };
 
+  /* =========================
+     LOGIN
+  ========================= */
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    if (isLoading) return;
+
     if (!state.password.trim()) {
-      setLocalError('Digite sua senha');
+      setError('Digite sua senha');
       return;
     }
 
     if (!state.selectedTenantId) {
-      setLocalError('Erro interno: tenant não selecionado');
+      setError('Tenant não selecionado');
       return;
     }
 
-    setLocalError(null);
-    clearError();
+    setIsLoading(true);
+    setError(null);
 
     try {
-      await login(state.email, state.password, state.selectedTenantId);
+      await login(
+        state.email,
+        state.password,
+        state.selectedTenantId
+      );
+
       onClose();
       router.push('/dashboard');
-    } catch (err) {
-      console.error('Erro no login:', err);
+    } catch (err: any) {
+      setError(err.message || 'Erro ao fazer login');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleBackStep = () => {
+  const handleBack = () => {
+    setError(null);
+
     if (state.step === 'tenant-selection') {
-      setState(prev => ({ ...prev, step: 'identify' }));
-    } else if (state.step === 'login') {
       setState(prev => ({
         ...prev,
-        step: state.tenants.length > 1 ? 'tenant-selection' : 'identify',
-        password: ''
+        step: 'identify',
+        tenants: [],
+        selectedTenantId: null,
       }));
     }
-    
-    setLocalError(null);
-    clearError();
+
+    if (state.step === 'login') {
+      setState(prev => ({
+        ...prev,
+        step:
+          prev.tenants.length > 1
+            ? 'tenant-selection'
+            : 'identify',
+        password: '',
+      }));
+    }
   };
 
-  const handleCloseModal = () => {
+  const handleClose = () => {
     setState({
       step: 'identify',
       email: '',
       password: '',
       tenants: [],
-      selectedTenantId: null
+      selectedTenantId: null,
     });
-    setLocalError(null);
-    clearError();
+    setError(null);
     onClose();
   };
 
-  const selectedTenant = state.tenants.find(t => t.tenantId === state.selectedTenantId);
+  const selectedTenant = state.tenants.find(
+    t => t.tenantId === state.selectedTenantId
+  );
 
+  /* =========================
+     UI
+  ========================= */
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6 relative">
         <button
-          onClick={handleCloseModal}
-          className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+          onClick={handleClose}
+          className="absolute top-4 right-4 text-gray-500"
         >
           <X className="h-5 w-5" />
         </button>
 
-        {/* Header */}
-        <div className="text-center mb-6 pr-8">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Faça login na sua conta
-          </h2>
-        </div>
-
-        {/* Etapa 1: Identificação por email */}
+        {/* IDENTIFY */}
         {state.step === 'identify' && (
           <form onSubmit={handleIdentify} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={state.email}
-                onChange={(e) => setState(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Digite seu email"
-                className="mt-1"
-                autoFocus
-                disabled={isLoading}
-              />
-            </div>
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={state.email}
+              onChange={e =>
+                setState(prev => ({
+                  ...prev,
+                  email: e.target.value,
+                }))
+              }
+              autoFocus
+              disabled={isLoading}
+            />
 
-            {currentError && (
-              <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md">
-                {currentError}
-              </div>
+            {error && (
+              <p className="text-sm text-red-600">{error}</p>
             )}
 
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button className="w-full" disabled={isLoading}>
               {isLoading ? 'Verificando...' : 'Continuar'}
             </Button>
-
-            <p className="text-center text-sm text-gray-600">
-              Não tem uma conta?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  handleCloseModal();
-                  onSwitchToSignup();
-                }}
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Cadastre-se
-              </button>
-            </p>
           </form>
         )}
 
-        {/* Etapa 2: Seleção de tenant */}
+        {/* TENANT SELECTION */}
         {state.step === 'tenant-selection' && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">
-                Selecione sua organização
-              </h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Seu email está vinculado a múltiplas organizações:
-              </p>
-              
-              <div className="space-y-2">
-                {state.tenants.map((tenant) => (
-                  <button
-                    key={tenant.tenantId}
-                    onClick={() => handleTenantSelection(tenant.tenantId)}
-                    className="w-full text-left p-3 border border-gray-200 rounded-md hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                    disabled={isLoading}
-                  >
-                    <div className="font-medium text-gray-900">
-                      {tenant.tenantName}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="space-y-3">
+            {state.tenants.map(t => (
+              <Button
+                key={t.tenantId}
+                variant="outline"
+                onClick={() => handleTenantSelection(t.tenantId)}
+              >
+                {t.tenantName}
+              </Button>
+            ))}
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleBackStep}
-              disabled={isLoading}
-              className="w-full"
-            >
+            <Button variant="ghost" onClick={handleBack}>
               Voltar
             </Button>
           </div>
         )}
 
-        {/* Etapa 3: Login com senha */}
+        {/* LOGIN */}
         {state.step === 'login' && (
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="text-center pb-4 border-b border-gray-200">
-              <div className="text-sm text-gray-600">Entrando como:</div>
-              <div className="font-medium text-gray-900 text-sm">{state.email}</div>
-              {selectedTenant && (
-                <div className="text-xs text-gray-600">
-                  {selectedTenant.tenantName}
-                </div>
-              )}
+            <div className="text-sm text-gray-600 text-center">
+              {state.email}
+              {selectedTenant && ` • ${selectedTenant.tenantName}`}
             </div>
 
-            <div>
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                value={state.password}
-                onChange={(e) => setState(prev => ({ ...prev, password: e.target.value }))}
-                placeholder="Digite sua senha"
-                className="mt-1"
-                autoFocus
-                disabled={isLoading}
-              />
-            </div>
+            <Label>Senha</Label>
+            <Input
+              type="password"
+              value={state.password}
+              onChange={e =>
+                setState(prev => ({
+                  ...prev,
+                  password: e.target.value,
+                }))
+              }
+              autoFocus
+              disabled={isLoading}
+            />
 
-            {currentError && (
-              <div className="text-sm text-red-600 bg-red-50 p-2 rounded-md">
-                {currentError}
-              </div>
+            {error && (
+              <p className="text-sm text-red-600">{error}</p>
             )}
 
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBackStep}
-                disabled={isLoading}
-                className="flex-1"
-              >
+              <Button type="button" variant="outline" onClick={handleBack}>
                 Voltar
               </Button>
-              <Button 
-                type="submit" 
-                className="flex-1"
-                disabled={isLoading}
-              >
+              <Button className="flex-1" disabled={isLoading}>
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </Button>
             </div>

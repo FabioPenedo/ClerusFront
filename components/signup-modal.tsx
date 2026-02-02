@@ -3,18 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
-import { SignupRequest } from '@/lib/services/auth.service';
+import { signup, SignupRequest, type Locality } from '@/lib/services/auth.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 
-const LOCALITIES = [
-  { value: 1, label: 'Brasil' },
-  { value: 2, label: 'Estados Unidos' },
-  { value: 3, label: 'Portugal' },
-  { value: 4, label: 'Outros' }
+const LOCALITIES: Array<{ value: Locality; label: string }> = [
+  { value: 'Central', label: 'Central' },
+  { value: 'Regional', label: 'Regional' },
+  { value: 'Local', label: 'Local' }
 ];
 
 interface SignupModalProps {
@@ -25,11 +23,12 @@ interface SignupModalProps {
 
 export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalProps) {
   const router = useRouter();
-  const { signup, error, isLoading, clearError } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<SignupRequest>({
     tenantName: '',
-    locality: 1,
+    locality: 'Central',
     userName: '',
     email: '',
     phone: '',
@@ -88,7 +87,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
     return isValid;
   };
 
-  const handleInputChange = (field: keyof SignupRequest | 'confirmPassword', value: string | number) => {
+  const handleInputChange = (field: keyof SignupRequest | 'confirmPassword', value: string | Locality) => {
     if (field === 'confirmPassword') {
       setConfirmPassword(value as string);
     } else {
@@ -99,7 +98,9 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
       setFormErrors(prev => ({ ...prev, [field]: undefined }));
     }
 
-    clearError();
+    if (error) {
+      setError(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,19 +110,26 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
       return;
     }
 
+    setIsLoading(true);
+    setError(null);
+
     try {
       await signup(formData);
       onClose();
       router.push('/dashboard');
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao criar conta. Tente novamente.';
+      setError(errorMessage);
       console.error('Erro no cadastro:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleCloseModal = () => {
     setFormData({
       tenantName: '',
-      locality: 1,
+      locality: 'Central',
       userName: '',
       email: '',
       phone: '',
@@ -129,7 +137,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
     });
     setConfirmPassword('');
     setFormErrors({});
-    clearError();
+    setError(null);
     onClose();
   };
 
@@ -178,7 +186,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin }: SignupModalPro
             <select
               id="locality"
               value={formData.locality}
-              onChange={(e) => handleInputChange('locality', Number(e.target.value))}
+              onChange={(e) => handleInputChange('locality', e.target.value as Locality)}
               className="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"
               disabled={isLoading}
             >
