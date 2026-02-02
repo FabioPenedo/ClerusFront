@@ -1,8 +1,18 @@
-import { tokenStore } from "../token-store";
+import { sessionStore, tokenStore } from "../info.store";
 
-interface AuthResponse {
+export interface AuthResponse {
   accessToken: string;
-  expiresIn: number;
+  tenant: {
+    id: number;
+    name: string;
+  };
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    role: string;
+  };
 }
 
 export type Locality = 'Central' | 'Regional' | 'Local';
@@ -50,6 +60,10 @@ export async function signup(
 
   // salva o access token em memória
   tokenStore.set(data.accessToken);
+  sessionStore.set({
+    tenant: data.tenant,
+    user: data.user,
+  })
 
   return data;
 }
@@ -94,6 +108,12 @@ export async function login(
   const data: AuthResponse = await res.json();
 
   tokenStore.set(data.accessToken);
+
+  sessionStore.set({
+    tenant: data.tenant,
+    user: data.user,
+  })
+
   return data;
 }
 
@@ -109,5 +129,6 @@ export async function logout(): Promise<void> {
 
   // Remove o access token do estado/memória
   tokenStore.clear();
+  sessionStore.clear();
 }
 

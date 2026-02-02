@@ -31,8 +31,8 @@ declare namespace __next_route_internal_types__ {
   type StaticRoutes = 
     | `/`
     | `/dashboard`
-    | `/dashboard/auth-example`
     | `/dashboard/announcements`
+    | `/dashboard/auth-example`
     | `/dashboard/financial`
     | `/dashboard/members`
     | `/dashboard/reports`

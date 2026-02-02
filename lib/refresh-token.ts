@@ -1,5 +1,5 @@
 // lib/http/refresh-token.ts
-import { tokenStore } from './token-store';
+import { tokenStore } from './info.store';
 import { ApiError } from './api-error';
 
 const API_BASE_URL = 'https://localhost:7166';

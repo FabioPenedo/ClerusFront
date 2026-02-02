@@ -1,4 +1,4 @@
-import { tokenStore } from './token-store';
+import { tokenStore } from './info.store';
 import { refreshAccessToken } from './refresh-token';
 import { ApiError } from './api-error';
 
