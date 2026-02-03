@@ -59,7 +59,11 @@ export default function DashboardPage() {
                 <p className="text-sm text-amber-700 mt-1">{dashboard.sections.plan.upgradeDescription}</p>
               </div>
             </div>
-            <Button variant="outline" size="sm">
+            <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => { window.location.href = "/#pricing"; }}
+            >
               {dashboard.sections.plan.upgradeButton}
             </Button>
           </div>
@@ -170,48 +174,6 @@ export default function DashboardPage() {
               </Link>
             </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Seção de Anúncios */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>{dashboard.sections.announcements.title}</CardTitle>
-              <CardDescription>{dashboard.sections.announcements.description}</CardDescription>
-            </div>
-            <Button asChild>
-              <Link href="/dashboard/announcements">
-                <Plus className="h-4 w-4 mr-2" />
-                {dashboard.sections.announcements.createButton}
-              </Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {data.announcements.recent.length > 0 ? (
-            <div className="space-y-3">
-              {data.announcements.recent.map((announcement) => (
-                <div key={announcement.id} className="p-4 rounded-lg border border-border bg-background">
-                  <p className="font-medium mb-1">{announcement.title}</p>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{announcement.description}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {new Date(announcement.date).toLocaleDateString("pt-BR")}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">{dashboard.sections.announcements.noData}</p>
-              <Button variant="outline" asChild>
-                <Link href="/dashboard/announcements">
-                  Criar primeiro anúncio
-                </Link>
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

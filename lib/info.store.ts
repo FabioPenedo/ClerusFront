@@ -19,6 +19,7 @@ export const tokenStore = {
 export type Tenant = {
   id: number;
   name: string;
+  plan: string;
 };
 
 export type User = {

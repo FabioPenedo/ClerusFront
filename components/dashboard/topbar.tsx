@@ -5,15 +5,15 @@ import { Button } from "@/components/ui/button";
 import { User, Bell, Plus, LogOut } from "lucide-react";
 import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
 import { logout } from "@/lib/services/auth.service";
+import { sessionStore } from "@/lib/info.store";
 
-interface TopbarProps {
-  churchName?: string;
-  userName?: string;
-}
 
-export function Topbar({ churchName, userName }: TopbarProps) {
+export function Topbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isPlanLimitOpen, setIsPlanLimitOpen] = useState(false);
 
+
+  const session = sessionStore.get();
 
   const handleLogout = async () => {
     try {
@@ -34,9 +34,9 @@ export function Topbar({ churchName, userName }: TopbarProps) {
       <header className="sticky top-0 z-30 bg-white border-b border-border">
         <div className="flex h-16 items-center justify-between px-6">
           <div>
-            <h1 className="text-lg font-semibold">teste</h1>
+            <h1 className="text-lg font-semibold">{session?.tenant.name}</h1>
               <p className="text-xs text-muted-foreground">
-                Tenant ID: teste
+                Tenant ID: {session?.tenant.id}
               </p>
           </div>
           <div className="flex items-center gap-4">
@@ -48,7 +48,9 @@ export function Topbar({ churchName, userName }: TopbarProps) {
              <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {}}
+                onClick={() => {
+                  session?.tenant.plan === 'free' && setIsPlanLimitOpen(true);
+                }}
                 className="hidden sm:flex"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -61,8 +63,8 @@ export function Topbar({ churchName, userName }: TopbarProps) {
                 <User className="h-5 w-5" />
               </div>
               <div className="hidden sm:block">
-                <p className="text-sm font-medium">teste</p>
-                <p className="text-xs text-muted-foreground">teste</p>
+                <p className="text-sm font-medium">{session?.user.name}</p>
+                <p className="text-xs text-muted-foreground">{session?.user.email}</p>
               </div>
               
               {/* Botão de Logout */}
@@ -86,9 +88,9 @@ export function Topbar({ churchName, userName }: TopbarProps) {
 
       {/* Modal de limite de plano */}
       <PlanLimitModal
-        open={false}
-        onOpenChange={() => {}}
-        feature={undefined}
+        open={isPlanLimitOpen}
+        onOpenChange={setIsPlanLimitOpen}
+        feature="users"
         onUpgrade={() => {
           window.location.href = "/#pricing";
         }}

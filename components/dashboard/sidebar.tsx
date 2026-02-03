@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, DollarSign, Megaphone, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboard } from "@/lib/content";
+import Image from "next/image";
+import logo from '../../docs/images/logo.png';
 
 const iconMap = {
   LayoutDashboard,
@@ -21,22 +23,21 @@ export function Sidebar() {
     <aside className="hidden md:flex flex-col w-64 border-r border-border bg-white">
       <div className="p-6 border-b border-border">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white font-bold">
-            IG
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm text-muted-foreground">Gestão</span>
-            <span className="text-base font-semibold">Igreja Clara</span>
-          </div>
+          <Image
+            src={logo}
+            width={130}
+            loading="lazy"
+            alt="Clerus Logo"
+          />
         </Link>
       </div>
       <nav className="flex-1 p-4 space-y-1">
         {dashboard.menu.map((item) => {
           const Icon = iconMap[item.icon as keyof typeof iconMap];
-          const isActive = pathname === item.href || 
+          const isActive = pathname === item.href ||
             (item.href === "/dashboard" && pathname === "/dashboard") ||
             (item.href !== "/dashboard" && pathname.startsWith(item.href));
-          
+
           return (
             <Link
               key={item.href}

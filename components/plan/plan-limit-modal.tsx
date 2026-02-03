@@ -21,7 +21,7 @@ const featureMessages: Record<string, string> = {
   members: "Você atingiu o limite de membros do plano gratuito (50 membros).",
   users: "Você atingiu o limite de usuários do plano gratuito (1 usuário).",
   canExportReports: "A exportação de relatórios está disponível apenas no plano completo.",
-  canUseAI: "Os recursos de IA estão disponíveis apenas no plano completo."
+  financial: "Você atingiu o limite do mês de registros financeiros do plano gratuito (15 registros).",
 };
 
 export function PlanLimitModal({

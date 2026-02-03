@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -14,39 +20,47 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AddMemberModal } from "@/components/members/add-member-modal";
 import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
-import { Plus, AlertCircle } from "lucide-react";
+import { Plus, AlertCircle, Loader2 } from "lucide-react";
 import { dashboard } from "@/lib/content";
-import { mockDashboardData } from "@/lib/mock-data";
+import { getMembers, Member } from "@/lib/services/member.service";
 
 const members = dashboard.members;
-
-interface Member {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  status: "active" | "inactive";
-  createdAt: string;
-}
 
 export default function MembersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [membersList, setMembersList] = useState<Member[]>([]);
-  const data = mockDashboardData;
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric"
+      year: "numeric",
     });
   };
 
   const handleMemberAdded = () => {
-
+    handleGetMembers();
   };
 
+  const handleGetMembers = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
+      const data = await getMembers();
+      setMembersList(data);
+    } catch (err) {
+      setError("Erro ao carregar membros");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleGetMembers();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -56,22 +70,35 @@ export default function MembersPage() {
           <h1 className="text-3xl font-bold">{members.title}</h1>
           <p className="text-muted-foreground mt-2">{members.subtitle}</p>
         </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          disabled={false}
-        >
+        <Button onClick={() => setIsModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           {members.addButton}
         </Button>
       </div>
 
+      {/* Error Alert */}
+      {error && (
+        <div className="rounded-md border border-destructive bg-destructive/10 p-4">
+          <div className="flex">
+            <AlertCircle className="h-4 w-4 text-destructive" />
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-destructive">Erro</h3>
+              <div className="mt-2 text-sm text-destructive">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Aviso de limite do plano */}
       <Card className="border-amber-200 bg-amber-50/50">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-amber-600" />
               <div>
-                <p className="font-medium text-amber-900">{members.limitReached}</p>
+                <p className="font-medium text-amber-900">
+                  {members.limitReached}
+                </p>
                 <p className="text-sm text-amber-700 mt-1">
                   Faça upgrade para cadastrar mais membros.
                 </p>
@@ -84,17 +111,7 @@ export default function MembersPage() {
         </CardContent>
       </Card>
 
-      {/* Informações do plano */}
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <p>
-          membros cadastrados
-        </p>
-        <p className="text-amber-600 font-medium">
-          Você está próximo do limite do plano gratuito.
-        </p>
-      </div>
-
-      {/* Tabela de membros */}
+      {/* Tabela */}
       <Card>
         <CardHeader>
           <CardTitle>Lista de membros</CardTitle>
@@ -102,63 +119,79 @@ export default function MembersPage() {
             Todos os membros cadastrados na sua igreja.
           </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">
-              Ainda não há membros cadastrados.
-            </p>
-            <Button onClick={() => setIsModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Cadastrar primeiro membro
-            </Button>
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : membersList.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                Ainda não há membros cadastrados.
+              </p>
+              <Button onClick={() => setIsModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Cadastrar primeiro membro
+              </Button>
+            </div>
           ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{members.table.name}</TableHead>
-                  <TableHead>{members.table.email}</TableHead>
-                  <TableHead>{members.table.phone}</TableHead>
-                  <TableHead>{members.table.status}</TableHead>
-                  <TableHead>{members.table.createdAt}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {membersList && membersList.length > 0 ? (
-                  membersList.map((member) => (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{members.table.name}</TableHead>
+                    <TableHead>{members.table.email}</TableHead>
+                    <TableHead>{members.table.phone}</TableHead>
+                    <TableHead>{members.table.status}</TableHead>
+                    <TableHead>{members.table.createdAt}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {membersList.map((member) => (
                     <TableRow key={member.id}>
-                      <TableCell className="font-medium">{member.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {member.name}
+                      </TableCell>
                       <TableCell>{member.email}</TableCell>
                       <TableCell>{member.phone}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={member.status === "active" ? "default" : "outline"}
+                          variant={member.active ? "default" : "outline"}
                         >
-                          {member.status === "active"
+                          {member.active
                             ? members.status.active
                             : members.status.inactive}
                         </Badge>
                       </TableCell>
-                      <TableCell>{formatDate(member.createdAt)}</TableCell>
+                      <TableCell>
+                        {formatDate(member.createdAt)}
+                      </TableCell>
                     </TableRow>
-                  ))
-                ) : null}
-              </TableBody>
-            </Table>
-          </div>
-          )
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Modal de adicionar membro */}
+      {/* Modal adicionar membro */}
       <AddMemberModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onSuccess={handleMemberAdded}
       />
 
-      {/* Modal de limite de plano */}
+      {/* Modal limite do plano */}
+      <PlanLimitModal
+        open={false}
+        onOpenChange={() => {}}
+        feature="members"
+        onUpgrade={() => {
+          window.location.href = "/#pricing";
+        }}
+      />
     </div>
   );
 }
