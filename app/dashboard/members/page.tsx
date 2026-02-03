@@ -37,7 +37,7 @@ export default function MembersPage() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    });
+    }); 
   };
 
   const handleMemberAdded = () => {
@@ -48,9 +48,8 @@ export default function MembersPage() {
     try {
       setIsLoading(true);
       setError(null);
-
-      const data = await getMembers();
-      setMembersList(data);
+      const response = await getMembers();
+      setMembersList(response);
     } catch (err) {
       setError("Erro ao carregar membros");
     } finally {

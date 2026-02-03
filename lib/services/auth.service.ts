@@ -5,6 +5,7 @@ export interface AuthResponse {
   tenant: {
     id: number;
     name: string;
+    plan: string;
   };
   user: {
     id: number;
