@@ -19,13 +19,18 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { AddMemberModal } from "@/components/members/add-member-modal";
+import { EditMemberModal } from "@/components/members/edit-member-modal";
+import { DeleteMemberModal } from "@/components/members/delete-member-modal";
 import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
-import { Plus, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, AlertCircle, Loader2, Edit2, Trash2 } from "lucide-react";
 import { dashboard } from "@/lib/content";
 import {
   createMember,
   CreateMemberDTO,
   getMembers,
+  updateMember,
+  UpdateMemberDTO,
+  deleteMember,
   Member
 } from "@/lib/services/member.service";
 
@@ -33,6 +38,9 @@ const members = dashboard.members;
 
 export default function MembersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [membersList, setMembersList] = useState<Member[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +62,42 @@ export default function MembersPage() {
       setError("Erro ao cadastrar membro");
       throw err;
     }
+  };
+
+  const handleUpdateMember = async (data: UpdateMemberDTO) => {
+    try {
+      setError(null);
+      if (selectedMember) {
+        await updateMember(selectedMember.id, data);
+        await handleGetMembers();
+      }
+    } catch (err) {
+      setError("Erro ao atualizar membro");
+      throw err;
+    }
+  };
+
+  const handleDeleteMember = async () => {
+    try {
+      setError(null);
+      if (selectedMember) {
+        await deleteMember(selectedMember.id);
+        await handleGetMembers();
+      }
+    } catch (err) {
+      setError("Erro ao deletar membro");
+      throw err;
+    }
+  };
+
+  const openEditModal = (member: Member) => {
+    setSelectedMember(member);
+    setIsEditModalOpen(true);
+  };
+
+  const openDeleteModal = (member: Member) => {
+    setSelectedMember(member);
+    setIsDeleteModalOpen(true);
   };
 
   const handleGetMembers = async () => {
@@ -159,6 +203,7 @@ export default function MembersPage() {
                     <TableHead>{members.table.birthday}</TableHead>
                     <TableHead>{members.table.status}</TableHead>
                     <TableHead>{members.table.createdAt}</TableHead>
+                    <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -184,6 +229,24 @@ export default function MembersPage() {
                       <TableCell>
                         {formatDate(member.createdAt)}
                       </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => openEditModal(member)}
+                            className="p-2 hover:bg-slate-100 rounded-md transition-colors"
+                            title="Editar membro"
+                          >
+                            <Edit2 className="h-4 w-4 text-blue-600" />
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal(member)}
+                            className="p-2 hover:bg-slate-100 rounded-md transition-colors"
+                            title="Deletar membro"
+                          >
+                            <Trash2 className="h-4 w-4 text-red-600" />
+                          </button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -198,6 +261,22 @@ export default function MembersPage() {
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
         onCreate={handleCreateMember}
+      />
+
+      {/* Modal editar membro */}
+      <EditMemberModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        member={selectedMember}
+        onUpdate={handleUpdateMember}
+      />
+
+      {/* Modal deletar membro */}
+      <DeleteMemberModal
+        open={isDeleteModalOpen}
+        onOpenChange={setIsDeleteModalOpen}
+        member={selectedMember}
+        onDelete={handleDeleteMember}
       />
 
       {/* Modal limite do plano */}
