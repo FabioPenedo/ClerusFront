@@ -266,52 +266,6 @@ export const signupModal = {
   legalText: "Ao criar a conta, você concorda com nossos Termos de Uso e Política de Privacidade."
 };
 
-export const errorMessages = {
-  required: "Este campo é necessário para continuar. Por favor, preencha todas as informações solicitadas.",
-  emailInvalid: "O email informado não está em um formato válido. Verifique se digitou corretamente (exemplo: contato@igreja.com).",
-  emailExists: "Este email já está cadastrado em nossa plataforma. Se você já tem uma conta, faça login. Caso contrário, use outro email.",
-  passwordTooShort: "A senha precisa ter pelo menos 6 caracteres para garantir a segurança da sua conta. Escolha uma senha um pouco mais longa.",
-  serverError: "Ocorreu um problema ao processar sua solicitação. Por favor, tente novamente em alguns instantes. Se o problema persistir, entre em contato conosco.",
-  networkError: "Não conseguimos conectar com nossos servidores. Verifique sua conexão com a internet e tente novamente.",
-  timeoutError: "A solicitação está demorando mais que o esperado. Por favor, verifique sua conexão e tente novamente. Se o problema continuar, pode ser que nossos servidores estejam temporariamente ocupados."
-};
-
-export const onboarding = {
-  welcome: {
-    title: "Bem-vindo(a)! Sua igreja foi criada com sucesso.",
-    description: "Sua igreja já pode começar a usar o sistema. Vamos te ajudar a dar os primeiros passos.",
-    primaryCta: "Começar agora",
-    secondaryCta: "Pular por enquanto"
-  },
-  checklist: {
-    title: "Primeiros passos",
-    encouragement: "Você pode concluir esses passos agora ou depois. Tudo foi pensado para ser simples e rápido.",
-    steps: [
-      {
-        id: "members",
-        title: "Cadastrar membros",
-        description: "Adicione os membros da sua igreja para começar a organizar tudo.",
-        cta: "Cadastrar agora",
-        href: "/dashboard/members"
-      },
-      {
-        id: "financial",
-        title: "Registrar um lançamento financeiro",
-        description: "Registre entradas e saídas para acompanhar a saúde financeira.",
-        cta: "Registrar agora",
-        href: "/dashboard/financial"
-      },
-      {
-        id: "announcements",
-        title: "Criar um anúncio",
-        description: "Comunique avisos importantes para a igreja.",
-        cta: "Criar anúncio",
-        href: "/dashboard/announcements"
-      }
-    ]
-  }
-};
-
 export const dashboard = {
   title: "Visão geral da sua igreja",
   subtitle: "Acompanhe os principais dados em um só lugar.",
