@@ -8,9 +8,14 @@ import { usePlanCheck } from "@/hooks/use-plan-check";
 import { Download, TrendingUp, TrendingDown, DollarSign, AlertCircle } from "lucide-react";
 import { dashboard } from "@/lib/content";
 import { mockReportsData } from "@/lib/mock-data";
-import { mockFinancialEntries } from "@/lib/mock-data";
 
 const reports = dashboard.reports;
+
+type CategoryData = {
+  category: string;
+  amount: number;
+  percentage: number;
+};
 
 export default function ReportsPage() {
   const { checkLimit, showModal, setShowModal, blockedFeature, plan } = usePlanCheck();
@@ -159,7 +164,7 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.incomeByCategory.map((item) => (
+            {data.incomeByCategory.map((item: CategoryData) => (
               <div key={item.category} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{item.category}</span>
@@ -189,7 +194,7 @@ export default function ReportsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.expensesByCategory.map((item) => (
+            {data.expensesByCategory.map((item: CategoryData) => (
               <div key={item.category} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium">{item.category}</span>

@@ -273,8 +273,8 @@ export const dashboard = {
   menu: [
     { label: "Visão geral", href: "/dashboard", icon: "LayoutDashboard" },
     { label: "Membros", href: "/dashboard/members", icon: "Users" },
+    { label: "Usuários", href: "/dashboard/users", icon: "UserCog" },
     { label: "Financeiro", href: "/dashboard/financial", icon: "DollarSign" },
-    { label: "Anúncios", href: "/dashboard/announcements", icon: "Megaphone" },
     { label: "Relatórios", href: "/dashboard/reports", icon: "FileText" }
   ],
   summaryCards: {
@@ -307,11 +307,11 @@ export const dashboard = {
       limitWarning: "Você está próximo do limite do plano gratuito (50 membros).",
       noData: "Ainda não há membros cadastrados."
     },
-    announcements: {
-      title: "Últimos anúncios",
-      description: "Comunicados recentes para sua igreja.",
-      createButton: "Criar anúncio",
-      noData: "Ainda não há anúncios criados."
+    users: {
+      title: "Usuários do sistema",
+      description: "Gerencie os usuários com acesso ao sistema.",
+      createButton: "Adicionar usuário",
+      noData: "Ainda não há usuários cadastrados."
     },
     plan: {
       title: "Plano atual",
@@ -385,6 +385,67 @@ export const dashboard = {
         }
       },
       submitButton: "Cadastrar membro",
+      cancelButton: "Cancelar"
+    }
+  },
+  users: {
+    title: "Usuários do sistema",
+    subtitle: "Gerencie os usuários com acesso ao sistema da sua igreja.",
+    addButton: "Adicionar usuário",
+    limitReached: "Você atingiu o limite de usuários do plano gratuito.",
+    upgradeButton: "Conhecer plano completo",
+    table: {
+      name: "Nome",
+      email: "Email",
+      phone: "Telefone",
+      role: "Papel",
+      status: "Status",
+      createdAt: "Data de cadastro",
+      actions: "Ações"
+    },
+    status: {
+      active: "Ativo",
+      inactive: "Inativo"
+    },
+    roles: {
+      admin: "Administrador",
+      financial: "Financeiro",
+      secretary: "Secretário"
+    },
+    modal: {
+      title: "Adicionar novo usuário",
+      subtitle: "Preencha os dados do usuário para cadastrá-lo no sistema.",
+      fields: {
+        name: {
+          label: "Nome completo",
+          placeholder: "João da Silva",
+          helperText: "Nome completo do usuário."
+        },
+        email: {
+          label: "Email",
+          placeholder: "joao@email.com",
+          helperText: "Email para login e comunicação."
+        },
+        phone: {
+          label: "Telefone",
+          placeholder: "(31) 99999-9999",
+          helperText: "Telefone ou WhatsApp do usuário."
+        },
+        password: {
+          label: "Senha",
+          placeholder: "Crie uma senha segura",
+          helperText: "Mínimo de 6 caracteres."
+        },
+        role: {
+          label: "Papel",
+          helperText: "Papel do usuário no sistema."
+        },
+        status: {
+          label: "Status",
+          helperText: "Status do usuário no sistema."
+        }
+      },
+      submitButton: "Cadastrar usuário",
       cancelButton: "Cancelar"
     }
   },
@@ -465,53 +526,6 @@ export const dashboard = {
       cancelButton: "Cancelar"
     },
     noData: "Ainda não há lançamentos financeiros registrados."
-  },
-  announcements: {
-    title: "Anúncios",
-    subtitle: "Crie e gerencie comunicados para a igreja.",
-    addButton: "Criar anúncio",
-    integrationNotice: "Envio por WhatsApp e Email em breve.",
-    table: {
-      title: "Título",
-      message: "Mensagem",
-      status: "Status",
-      channels: "Canais",
-      createdAt: "Data de criação",
-      actions: "Ações"
-    },
-    status: {
-      active: "Ativo",
-      draft: "Rascunho"
-    },
-    channels: {
-      internal: "Interno",
-      whatsapp: "WhatsApp",
-      email: "Email"
-    },
-    modal: {
-      title: "Novo anúncio",
-      subtitle: "Crie um comunicado para a igreja.",
-      fields: {
-        title: {
-          label: "Título do anúncio",
-          placeholder: "Ex: Reunião de oração",
-          helperText: "Título que aparecerá no anúncio."
-        },
-        message: {
-          label: "Mensagem do anúncio",
-          placeholder: "Digite a mensagem do anúncio...",
-          helperText: "Este anúncio ficará visível no sistema para a igreja."
-        },
-        status: {
-          label: "Status",
-          helperText: "Publicar agora ou salvar como rascunho."
-        }
-      },
-      submitButton: "Publicar anúncio",
-      cancelButton: "Cancelar",
-      saveDraftButton: "Salvar como rascunho"
-    },
-    noData: "Ainda não há anúncios criados."
   },
   reports: {
     title: "Relatórios",
