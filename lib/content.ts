@@ -375,13 +375,23 @@ export const dashboard = {
       name: "Nome",
       email: "Email",
       phone: "Telefone",
+      age: "Idade",
+      group: "Grupo",
       status: "Status",
+      birthday: "Data de nascimento",
       createdAt: "Data de cadastro",
       actions: "Ações"
     },
     status: {
       active: "Ativo",
       inactive: "Inativo"
+    },
+    groups: {
+      child: "Criança",
+      teen: "Adolescente",
+      young: "Jovem",
+      adult: "Adulto",
+      elder: "Idoso"
     },
     modal: {
       title: "Adicionar novo membro",
@@ -401,6 +411,19 @@ export const dashboard = {
           label: "Telefone",
           placeholder: "(31) 99999-9999",
           helperText: "Telefone ou WhatsApp do membro."
+        },
+        age: {
+          label: "Idade",
+          placeholder: "30",
+          helperText: "Idade do membro."
+        },
+        group: {
+          label: "Grupo",
+          helperText: "Classificação por faixa etária."
+        },
+        birthday: {
+          label: "Data de nascimento",
+          helperText: "Data de nascimento do membro."
         },
         status: {
           label: "Status",

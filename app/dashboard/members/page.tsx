@@ -22,7 +22,12 @@ import { AddMemberModal } from "@/components/members/add-member-modal";
 import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
 import { Plus, AlertCircle, Loader2 } from "lucide-react";
 import { dashboard } from "@/lib/content";
-import { getMembers, Member } from "@/lib/services/member.service";
+import {
+  createMember,
+  CreateMemberDTO,
+  getMembers,
+  Member
+} from "@/lib/services/member.service";
 
 const members = dashboard.members;
 
@@ -40,8 +45,15 @@ export default function MembersPage() {
     }); 
   };
 
-  const handleMemberAdded = () => {
-    handleGetMembers();
+  const handleCreateMember = async (data: CreateMemberDTO) => {
+    try {
+      setError(null);
+      await createMember(data);
+      await handleGetMembers();
+    } catch (err) {
+      setError("Erro ao cadastrar membro");
+      throw err;
+    }
   };
 
   const handleGetMembers = async () => {
@@ -142,6 +154,9 @@ export default function MembersPage() {
                     <TableHead>{members.table.name}</TableHead>
                     <TableHead>{members.table.email}</TableHead>
                     <TableHead>{members.table.phone}</TableHead>
+                    <TableHead>{members.table.age}</TableHead>
+                    <TableHead>{members.table.group}</TableHead>
+                    <TableHead>{members.table.birthday}</TableHead>
                     <TableHead>{members.table.status}</TableHead>
                     <TableHead>{members.table.createdAt}</TableHead>
                   </TableRow>
@@ -154,6 +169,9 @@ export default function MembersPage() {
                       </TableCell>
                       <TableCell>{member.email}</TableCell>
                       <TableCell>{member.phone}</TableCell>
+                      <TableCell>{member.age}</TableCell>
+                      <TableCell>{member.group}</TableCell>
+                      <TableCell>{formatDate(member.birthday)}</TableCell>
                       <TableCell>
                         <Badge
                           variant={member.active ? "default" : "outline"}
@@ -179,7 +197,7 @@ export default function MembersPage() {
       <AddMemberModal
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        onSuccess={handleMemberAdded}
+        onCreate={handleCreateMember}
       />
 
       {/* Modal limite do plano */}

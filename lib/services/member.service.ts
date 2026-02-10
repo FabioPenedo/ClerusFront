@@ -8,22 +8,32 @@ import { sessionStore } from '../info.store';
 export interface Member {
   id: string;
   name: string;
-  email?: string;
-  phone?: string;
+  email: string;
+  phone: string;
+  age: number;
+  group: "criança" | "adolescente" | "jovem" | "adulto" | "idoso";
+  birthday: string;
   active: boolean;
   createdAt: string;
 }
 
 export interface CreateMemberDTO {
   name: string;
-  email?: string;
-  phone?: string;
+  email: string;
+  phone: string;
+  age: number;
+  group: "criança" | "adolescente" | "jovem" | "adulto" | "idoso";
+  birthday: string;
+  tenantId: number;
 }
 
 export interface UpdateMemberDTO {
   name?: string;
   email?: string;
   phone?: string;
+  age?: number;
+  group?: "criança" | "adolescente" | "jovem" | "adulto" | "idoso";
+  active?: boolean;
 }
 
 /* =======================
