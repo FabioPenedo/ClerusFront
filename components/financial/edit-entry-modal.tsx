@@ -11,29 +11,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { dashboard } from "@/lib/content";
 import { AlertCircle } from "lucide-react";
+import { dashboard } from "@/lib/content";
 import { Category } from "@/lib/services/categories.service";
-import { CreateTransactionDTO, TransactionType } from "@/lib/services/transaction.service";
-import { sessionStore } from "@/lib/info.store";
+import {
+  TransactionListItem,
+  TransactionType,
+  UpdateTransactionDTO,
+} from "@/lib/services/transaction.service";
 
 const financial = dashboard.financial;
 
-interface AddEntryModalProps {
+interface EditEntryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: Category[];
-  onSuccess?: () => void;
-  onCreate?: (data: CreateTransactionDTO) => Promise<void>;
+  transaction: TransactionListItem | null;
+  onUpdate?: (data: UpdateTransactionDTO) => Promise<void>;
 }
 
-export function AddEntryModal({
+export function EditEntryModal({
   open,
   onOpenChange,
   categories,
-  onSuccess,
-  onCreate,
-}: AddEntryModalProps) {
+  transaction,
+  onUpdate,
+}: EditEntryModalProps) {
   const [formData, setFormData] = React.useState({
     typeTransaction: "Income" as TransactionType,
     categoryId: "",
@@ -44,6 +47,20 @@ export function AddEntryModal({
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  React.useEffect(() => {
+    if (!transaction) {
+      return;
+    }
+
+    setFormData({
+      typeTransaction: transaction.typeTransaction,
+      categoryId: transaction.categoryId.toString(),
+      amount: String(transaction.amount),
+      date: new Date(transaction.date).toISOString().split("T")[0]
+    });
+    setErrors({});
+  }, [transaction, open]);
+
   const availableCategories = React.useMemo(() => {
     return categories;
   }, [categories]);
@@ -52,17 +69,18 @@ export function AddEntryModal({
     e.preventDefault();
     setErrors({});
 
-    // Validação básica
     const newErrors: Record<string, string> = {};
     if (!formData.categoryId) {
-      newErrors.categoryId = "A categoria é obrigatória.";
+      newErrors.categoryId = "A categoria e obrigatoria.";
     }
+
     const parsedValue = parseFloat(formData.amount.replace(",", "."));
     if (!formData.amount || Number.isNaN(parsedValue) || parsedValue <= 0) {
       newErrors.amount = "O valor deve ser maior que zero.";
     }
+
     if (!formData.date) {
-      newErrors.date = "A data é obrigatória.";
+      newErrors.date = "A data e obrigatoria.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -73,33 +91,22 @@ export function AddEntryModal({
     setIsSubmitting(true);
 
     try {
-      const session = sessionStore.get();
-      if (!session?.tenant?.id || !session?.user?.id) {
-        throw new Error("Sessao invalida");
-      }
-
-      const tenantId = parseInt(session.tenant.id.toString(), 10);
-      const createdByUserId = parseInt(session.user.id.toString(), 10);
       const categoryId = parseInt(formData.categoryId, 10);
       if (Number.isNaN(categoryId)) {
         throw new Error("Categoria invalida");
       }
 
-      if (onCreate) {
-        await onCreate({
+      if (onUpdate) {
+        await onUpdate({
           amount: parsedValue,
           typeTransaction: formData.typeTransaction,
           date: new Date(formData.date).toISOString(),
-          createdByUserId,
           categoryId,
-          tenantId,
         });
-      } else {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Erro ao criar lancamento";
+        error instanceof Error ? error.message : "Erro ao atualizar lancamento";
       setErrors({ submit: message });
       setIsSubmitting(false);
       return;
@@ -107,21 +114,11 @@ export function AddEntryModal({
 
     setIsSubmitting(false);
     onOpenChange(false);
-    
-    // Resetar formulário
-    setFormData({
-      typeTransaction: "Income",
-      categoryId: "",
-      amount: "",
-      date: new Date().toISOString().split("T")[0]
-    });
-
-    if (onSuccess) {
-      onSuccess();
-    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -146,9 +143,9 @@ export function AddEntryModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{financial.modal.title}</DialogTitle>
+          <DialogTitle className="text-2xl">Editar lancamento</DialogTitle>
           <DialogDescription className="text-base pt-2">
-            {financial.modal.subtitle}
+            Atualize os dados do lancamento selecionado.
           </DialogDescription>
         </DialogHeader>
 
@@ -258,10 +255,10 @@ export function AddEntryModal({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              {financial.modal.cancelButton}
+              Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Registrando..." : financial.modal.submitButton}
+              {isSubmitting ? "Atualizando..." : "Salvar alteracoes"}
             </Button>
           </div>
           {errors.submit && (

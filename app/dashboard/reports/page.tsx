@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
-import { usePlanCheck } from "@/hooks/use-plan-check";
 import { Download, TrendingUp, TrendingDown, DollarSign, AlertCircle } from "lucide-react";
 import { dashboard } from "@/lib/content";
 import { mockReportsData } from "@/lib/mock-data";
+import { sessionStore } from "@/lib/info.store";
+import {
+  exportFinancialReportPdf,
+  getFinancialByCategory,
+  getFinancialSummary,
+} from "@/lib/services/reports.service";
 
 const reports = dashboard.reports;
 
@@ -17,10 +21,22 @@ type CategoryData = {
   percentage: number;
 };
 
+type ReportData = {
+  totalIncome: number;
+  totalExpenses: number;
+  balance: number;
+  incomeByCategory: CategoryData[];
+  expensesByCategory: CategoryData[];
+};
+
 export default function ReportsPage() {
-  const { checkLimit, showModal, setShowModal, blockedFeature, plan } = usePlanCheck();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [reportData, setReportData] = useState<ReportData>(mockReportsData.currentMonth);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const plan = useMemo(() => sessionStore.get()?.tenant.plan ?? "", []);
+  const isFreePlan = plan.toUpperCase() === "FREE";
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -29,16 +45,83 @@ export default function ReportsPage() {
     }).format(value);
   };
 
-  const data = useMemo(() => {
-    // Em produção, filtrar dados baseado no período selecionado
-    return mockReportsData.currentMonth;
+  const data = useMemo(() => reportData, [reportData]);
+
+  const getDateRange = (month: number, year: number) => {
+    const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
+    const end = new Date(year, month, 0, 23, 59, 59, 999);
+    return {
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    };
+  };
+
+  useEffect(() => {
+    const session = sessionStore.get();
+    if (!session) return;
+
+    const { startDate, endDate } = getDateRange(selectedMonth, selectedYear);
+    let cancelled = false;
+    setIsLoading(true);
+
+    Promise.all([
+      getFinancialSummary({ tenantId: session.tenant.id, startDate, endDate }),
+      getFinancialByCategory({ tenantId: session.tenant.id, startDate, endDate })
+    ])
+      .then(([summary, categories]) => {
+        if (cancelled) return;
+
+        const balance =
+          summary.balance ?? summary.totalIncome - summary.totalExpenses;
+
+        setReportData({
+          totalIncome: summary.totalIncome,
+          totalExpenses: summary.totalExpenses,
+          balance,
+          incomeByCategory: categories.incomeByCategory,
+          expensesByCategory: categories.expensesByCategory,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setReportData(mockReportsData.currentMonth);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedMonth, selectedYear]);
 
   const handleExportClick = () => {
-    if (checkLimit("canExportReports")) {
-      // Permitir exportação
-      console.log("Exportando relatório...");
-    }
+    if (isFreePlan) return;
+
+    const session = sessionStore.get();
+    if (!session) return;
+
+    const { startDate, endDate } = getDateRange(selectedMonth, selectedYear);
+
+    exportFinancialReportPdf({
+      tenantId: session.tenant.id,
+      startDate,
+      endDate,
+    })
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `relatorio-financeiro-${selectedMonth}-${selectedYear}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(() => {
+        // Falha silenciosa por enquanto
+      });
   };
 
   const getMonthName = (month: number) => {
@@ -58,7 +141,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Aviso plano gratuito */}
-      {plan === "FREE" && (
+      {isFreePlan && (
         <Card className="border-blue-200 bg-blue-50/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
@@ -271,35 +354,18 @@ export default function ReportsPage() {
           <div className="flex items-center gap-4">
             <Button
               onClick={handleExportClick}
-              disabled={plan === "FREE"}
-              variant={plan === "FREE" ? "outline" : "default"}
+              disabled={isFreePlan}
+              variant={isFreePlan ? "outline" : "default"}
             >
               <Download className="h-4 w-4 mr-2" />
               {reports.exportButton}
             </Button>
-            {plan === "FREE" && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowModal(true);
-                }}
-              >
-                {reports.upgradeButton}
-              </Button>
+            {isLoading && (
+              <span className="text-xs text-muted-foreground">Carregando...</span>
             )}
           </div>
         </CardContent>
       </Card>
-
-      {/* Modal de limite de plano */}
-      <PlanLimitModal
-        open={showModal}
-        onOpenChange={setShowModal}
-        feature={blockedFeature || undefined}
-        onUpgrade={() => {
-          window.location.href = "/#pricing";
-        }}
-      />
     </div>
   );
 }

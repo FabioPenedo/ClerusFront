@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, DollarSign, UserCog, FileText } from "lucide-react";
+import { LayoutDashboard, Users, DollarSign, UserCog, FileText, Tags } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { dashboard } from "@/lib/content";
 import Image from "next/image";
@@ -13,7 +13,8 @@ const iconMap = {
   Users,
   DollarSign,
   UserCog,
-  FileText
+  FileText,
+  Tags
 };
 
 export function Sidebar() {

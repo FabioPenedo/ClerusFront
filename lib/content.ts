@@ -275,6 +275,7 @@ export const dashboard = {
     { label: "Membros", href: "/dashboard/members", icon: "Users" },
     { label: "Usuários", href: "/dashboard/users", icon: "UserCog" },
     { label: "Financeiro", href: "/dashboard/financial", icon: "DollarSign" },
+    { label: "Categorias", href: "/dashboard/categories", icon: "Tags" },
     { label: "Relatórios", href: "/dashboard/reports", icon: "FileText" }
   ],
   summaryCards: {
@@ -526,6 +527,43 @@ export const dashboard = {
       cancelButton: "Cancelar"
     },
     noData: "Ainda não há lançamentos financeiros registrados."
+  },
+  categories: {
+    title: "Categorias financeiras",
+    subtitle: "Organize entradas e saídas por categorias.",
+    addButton: "Nova categoria",
+    table: {
+      name: "Nome",
+      type: "Tipo",
+      actions: "Ações"
+    },
+    types: {
+      income: "Entrada",
+      expense: "Saída"
+    },
+    modal: {
+      title: "Nova categoria",
+      subtitle: "Crie uma categoria para organizar os lançamentos.",
+      fields: {
+        name: {
+          label: "Nome",
+          placeholder: "Ex: Dízimos",
+          helperText: "Nome da categoria."
+        },
+        description: {
+          label: "Descrição",
+          placeholder: "Ex: Categoria para dízimos recebidos",
+          helperText: "Descrição da categoria."
+        },
+        type: {
+          label: "Tipo",
+          helperText: "Selecione se é entrada ou saída."
+        }
+      },
+      submitButton: "Salvar categoria",
+      cancelButton: "Cancelar"
+    },
+    noData: "Ainda não há categorias cadastradas."
   },
   reports: {
     title: "Relatórios",
