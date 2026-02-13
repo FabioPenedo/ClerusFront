@@ -17,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Plus, AlertCircle, Loader2, Edit2, Trash2 } from "lucide-react";
 import { dashboard } from "@/lib/content";
 import {
@@ -159,7 +158,7 @@ export default function CategoriesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>{categoriesContent.table.name}</TableHead>
-                    <TableHead>{categoriesContent.table.type}</TableHead>
+                    <TableHead>Descrição</TableHead>
                     <TableHead>{categoriesContent.table.actions}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -167,13 +166,7 @@ export default function CategoriesPage() {
                   {categories.map((category) => (
                     <TableRow key={category.id}>
                       <TableCell className="font-medium">{category.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {category.typeCategory === "Income"
-                            ? categoriesContent.types.income
-                            : categoriesContent.types.expense}
-                        </Badge>
-                      </TableCell>
+                      <TableCell>{category.description}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <button
