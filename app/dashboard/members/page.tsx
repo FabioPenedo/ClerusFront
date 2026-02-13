@@ -33,8 +33,10 @@ import {
   deleteMember,
   Member
 } from "@/lib/services/member.service";
+import { sessionStore } from "@/lib/info.store";
 
 const members = dashboard.members;
+const isPlanFree = sessionStore.get()?.tenant.plan === "free"
 
 export default function MembersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,7 +52,7 @@ export default function MembersPage() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }); 
+    });
   };
 
   const handleCreateMember = async (data: CreateMemberDTO) => {
@@ -125,7 +127,7 @@ export default function MembersPage() {
           <h1 className="text-3xl font-bold">{members.title}</h1>
           <p className="text-muted-foreground mt-2">{members.subtitle}</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} disabled={isPlanFree}>
           <Plus className="h-4 w-4 mr-2" />
           {members.addButton}
         </Button>
@@ -145,26 +147,31 @@ export default function MembersPage() {
       )}
 
       {/* Aviso de limite do plano */}
-      <Card className="border-amber-200 bg-amber-50/50">
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600" />
-              <div>
-                <p className="font-medium text-amber-900">
-                  {members.limitReached}
-                </p>
-                <p className="text-sm text-amber-700 mt-1">
-                  Faça upgrade para cadastrar mais membros.
-                </p>
+      {isPlanFree && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-900">
+                    {members.limitReached}
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Faça upgrade para cadastrar mais membros.
+                  </p>
+                </div>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { window.location.href = "/#pricing"; }}>
+                {members.upgradeButton}
+              </Button>
             </div>
-            <Button variant="outline" size="sm">
-              {members.upgradeButton}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tabela */}
       <Card>
@@ -282,7 +289,7 @@ export default function MembersPage() {
       {/* Modal limite do plano */}
       <PlanLimitModal
         open={false}
-        onOpenChange={() => {}}
+        onOpenChange={() => { }}
         feature="members"
         onUpgrade={() => {
           window.location.href = "/#pricing";

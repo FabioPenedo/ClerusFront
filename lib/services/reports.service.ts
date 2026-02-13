@@ -1,31 +1,33 @@
 import { httpClient } from "@/lib/http-client";
 import { tokenStore } from "../info.store";
 
-export type CategoryBreakdown = {
-  category: string;
-  amount: number;
-  percentage: number;
-};
-
-export type FinancialSummaryResponse = {
-  totalIncome: number;
-  totalExpenses: number;
-  balance?: number;
+export type CategoryReportItem = {
+  categoryId: string;
+  categoryName: string;
+  total: number;
+  TransactionCount: number;
 };
 
 export type FinancialByCategoryResponse = {
-  incomeByCategory: CategoryBreakdown[];
-  expensesByCategory: CategoryBreakdown[];
+  incomeCategories: CategoryReportItem[];
+  expenseCategories: CategoryReportItem[];
+  startDate: string;
+  endDate: string;
 };
 
-export type FinancialMonthlyItem = {
-  month: string;
+export type MonthlyReportItem = {
+  year: number;
+  month: number;
   totalIncome: number;
-  totalExpenses: number;
+  totalExpense: number;
   balance: number;
 };
 
-export type FinancialMonthlyResponse = FinancialMonthlyItem[];
+export type FinancialMonthlyResponse = {
+  months: MonthlyReportItem[];
+  startDate: string;
+  endDate: string;
+}
 
 export type ReportQuery = {
   tenantId: number;
@@ -38,15 +40,8 @@ const API_BASE_URL = "https://localhost:7166/api";
 const buildQuery = ({ tenantId, startDate, endDate }: ReportQuery) =>
   `?tenantId=${tenantId}&startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`;
 
-export async function getFinancialSummary(
-  params: ReportQuery
-): Promise<FinancialSummaryResponse> {
-  return httpClient.get<FinancialSummaryResponse>(
-    `/reports/financial/summary${buildQuery(params)}`
-  );
-}
 
-export async function getFinancialByCategory(
+export async function getCategoryReportAsync(
   params: ReportQuery
 ): Promise<FinancialByCategoryResponse> {
   return httpClient.get<FinancialByCategoryResponse>(
@@ -62,24 +57,22 @@ export async function getFinancialMonthly(
   );
 }
 
-export async function exportFinancialReportPdf(
+export async function exportToPdf(
   params: ReportQuery
 ): Promise<Blob> {
-  const token = tokenStore.get();
-  const url = `${API_BASE_URL}/reports/financial/export/pdf${buildQuery(params)}`;
+  return httpClient.get<Blob>(
+    `/reports/financial/export/pdf${buildQuery(params)}`,
+    undefined,
+    'blob'
+  );
+}
 
-  const res = await fetch(url, {
-    method: "GET",
-    credentials: "include",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
-
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(errorText || "Erro ao exportar relatorio");
-  }
-
-  return res.blob();
+export async function exportToExcel(
+  params: ReportQuery
+): Promise<Blob> {
+  return httpClient.get<Blob>(
+    `/reports/financial/export/excel${buildQuery(params)}`,
+    undefined,
+    'blob'
+  );
 }

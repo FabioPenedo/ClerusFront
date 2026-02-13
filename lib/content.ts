@@ -324,7 +324,7 @@ export const dashboard = {
     title: "Membros da igreja",
     subtitle: "Gerencie os membros cadastrados da sua igreja.",
     addButton: "Adicionar membro",
-    limitReached: "Você atingiu o limite de membros do plano gratuito.",
+    limitReached: "O limite é de 50 membros no plano gratuito.",
     upgradeButton: "Conhecer plano completo",
     table: {
       name: "Nome",
@@ -393,7 +393,7 @@ export const dashboard = {
     title: "Usuários do sistema",
     subtitle: "Gerencie os usuários com acesso ao sistema da sua igreja.",
     addButton: "Adicionar usuário",
-    limitReached: "Você atingiu o limite de usuários do plano gratuito.",
+    limitReached: "O limite é de 1 usuário no plano gratuito.",
     upgradeButton: "Conhecer plano completo",
     table: {
       name: "Nome",

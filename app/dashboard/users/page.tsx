@@ -35,7 +35,7 @@ import {
 import { sessionStore } from "@/lib/info.store";
 
 const users = dashboard.users;
-const plan = sessionStore.get()
+const isPlanFree = sessionStore.get()?.tenant.plan === "free"
 
 export default function UsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -126,7 +126,7 @@ export default function UsersPage() {
           <h1 className="text-3xl font-bold">{users.title}</h1>
           <p className="text-muted-foreground mt-2">{users.subtitle}</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} disabled={plan?.tenant.plan === "free"}>
+        <Button onClick={() => setIsModalOpen(true)} disabled={isPlanFree}>
           <Plus className="h-4 w-4 mr-2" />
           {users.addButton}
         </Button>
@@ -146,7 +146,7 @@ export default function UsersPage() {
       )}
 
       {/* Aviso de limite do plano */}
-      {plan?.tenant.plan === "free" && (
+      {isPlanFree && (
         <Card className="border-amber-200 bg-amber-50/50">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -161,7 +161,10 @@ export default function UsersPage() {
                   </p>
                 </div>
               </div>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { window.location.href = "/#pricing"; }}>
                 {users.upgradeButton}
               </Button>
             </div>

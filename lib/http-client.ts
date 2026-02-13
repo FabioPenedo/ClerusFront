@@ -16,7 +16,8 @@ export class HttpClient {
   async request<T>(
     endpoint: string,
     options: RequestInit = {},
-    retry = true
+    retry = true,
+    responseType: 'json' | 'blob' = 'json'
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers = this.getHeaders(options.headers);
@@ -44,14 +45,20 @@ export class HttpClient {
       // 4. Retorno vazio (204 No Content)
       if (response.status === 204) return null as T;
 
-      // 5. Parse do Body e validação do padrão ApiResponse
+      // 5. Tratamento por tipo de resposta
+      if (responseType === 'blob') {
+        return (await response.blob()) as T;
+      }
+
+      // JSON padrão ApiResponse<T>
       const result: ApiResponse<T> = await response.json();
-      
+
       if (!result.success) {
         throw new ApiError(result.message || 'Erro da API', response.status);
       }
 
       return result.data;
+
     } catch (error) {
       if (error instanceof ApiError) throw error;
       throw new ApiError('Falha na comunicação com o servidor', 500);
@@ -80,7 +87,7 @@ export class HttpClient {
 
   private async handleUnauthorized<T>(endpoint: string, options: RequestInit): Promise<T> {
     const refreshedToken = tokenStore.get();
-    
+
     // Se temos um novo token (atualizado no passo anterior), tenta de novo
     if (refreshedToken) {
       return this.request<T>(endpoint, options, false);
@@ -110,8 +117,8 @@ export class HttpClient {
 
   // --- Métodos de Conveniência ---
 
-  get<T>(url: string, options?: RequestInit) {
-    return this.request<T>(url, { ...options, method: 'GET' });
+  get<T>(url: string, options?: RequestInit, responseType: 'json' | 'blob' = 'json') {
+    return this.request<T>(url, { ...options, method: 'GET' }, true, responseType);
   }
 
   post<T>(url: string, body?: any, options?: RequestInit) {
