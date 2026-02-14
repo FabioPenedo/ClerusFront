@@ -302,6 +302,12 @@ export const dashboard = {
       description: "Acompanhe as movimentações financeiras da sua igreja.",
       noData: "Ainda não há lançamentos financeiros registrados."
     },
+    birthdays: {
+      title: "Aniversariantes do dia",
+      description: "Membros que fazem aniversário hoje.",
+      noData: "Não há aniversariantes hoje.",
+      viewAllButton: "Ver todos do mês"
+    },
     members: {
       title: "Membros cadastrados",
       description: "Gerencie os membros da sua igreja.",
