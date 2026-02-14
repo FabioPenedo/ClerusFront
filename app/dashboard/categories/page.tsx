@@ -117,6 +117,23 @@ export default function CategoriesPage() {
         </Button>
       </div>
 
+      {/* Demonstrativo de categorias */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total de Categorias
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{categories.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Categorias cadastradas
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {error && (
         <div className="rounded-md border border-destructive bg-destructive/10 p-4">
           <div className="flex">

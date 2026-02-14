@@ -28,8 +28,12 @@ import {
   UpdateTransactionDTO,
 } from "@/lib/services/transaction.service";
 import { CategoriesService, Category } from "@/lib/services/categories.service";
+import { sessionStore } from "@/lib/info.store";
 
 const financial = dashboard.financial;
+
+const isPlanFree = sessionStore.get()?.tenant.plan === "free"
+const maxMonthEntriesCount = financial.maxMonthEntriesCount ?? 15;
 
 export default function FinancialPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,6 +97,7 @@ export default function FinancialPage() {
     const balance = income - expenses;
 
     return {
+      monthEntriesCount: monthEntries.length,
       income,
       expenses,
       balance
@@ -189,10 +194,57 @@ export default function FinancialPage() {
           <h1 className="text-3xl font-bold">{financial.title}</h1>
           <p className="text-muted-foreground mt-2">{financial.subtitle}</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)}>
+        <Button onClick={() => setIsModalOpen(true)} disabled={isPlanFree && summary.monthEntriesCount >= maxMonthEntriesCount}>
           <Plus className="h-4 w-4 mr-2" />
           {financial.addButton}
         </Button>
+      </div>
+
+      {/* Demonstrativo de lançamentos */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total de lançamentos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{entriesList.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Lançamentos cadastrados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Lançamentos do mês
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{summary.monthEntriesCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Registrados no mês atual
+            </p>
+          </CardContent>
+        </Card>
+
+        {isPlanFree && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Limite do plano gratuito
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{maxMonthEntriesCount}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Lançamentos por mês
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Cards de resumo */}
@@ -228,6 +280,33 @@ export default function FinancialPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Aviso de limite do plano */}
+      {isPlanFree && summary.monthEntriesCount >= maxMonthEntriesCount && (
+        <Card className="border-amber-200 bg-amber-50/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600" />
+                <div>
+                  <p className="font-medium text-amber-900">
+                    {financial.limitReached}
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Faça upgrade para registrar mais lançamentos.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { window.location.href = "/#pricing"; }}>
+                {financial.upgradeButton}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Tabela de lançamentos */}

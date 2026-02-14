@@ -454,6 +454,9 @@ export const dashboard = {
     title: "Financeiro",
     subtitle: "Acompanhe as entradas e saídas da igreja.",
     addButton: "Novo lançamento",
+    limitReached: "O limite é de 15 lançamentos por mês no plano gratuito.",
+    upgradeButton: "Conhecer plano completo",
+    maxMonthEntriesCount: 15,
     summaryCards: {
       income: {
         label: "Entradas do mês",

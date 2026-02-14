@@ -132,6 +132,55 @@ export default function UsersPage() {
         </Button>
       </div>
 
+      {/* Demonstrativo de usuários */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Total de Usuários
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{usersList.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Usuários cadastrados
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Usuários Ativos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-green-600">
+              {usersList.filter((u) => u.active).length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Usuários ativos no sistema
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Usuários Inativos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-red-600">
+              {usersList.filter((u) => !u.active).length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Usuários inativos no sistema
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Error Alert */}
       {error && (
         <div className="rounded-md border border-destructive bg-destructive/10 p-4">
